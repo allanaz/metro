@@ -10,11 +10,9 @@
             rounded="lg"
             variant="tonal"
           >
-            <template #title>
-              <h2 class="text-h5 font-weight-bold">
-                {{ helloWorldText }}
-              </h2>
-            </template>
+            <v-select label="Select" :items="stations">
+            </v-select>
+            <v-data-table :items="helloWorldText" hide-default-footer></v-data-table>
           </v-card>
         </v-col>
       </v-row>
@@ -26,11 +24,20 @@
   import axios from 'axios';
   import { ref } from 'vue';
 
-  const helloWorldText = ref('loading...');
+  const helloWorldText = ref([]);
 
   const loadText = async () => {
-    const response = await axios.get('http://localhost:8000/hello-world');
-    helloWorldText.value = response.data;
+    const response = await axios.get('http://localhost:8000/nextTrains/B03');
+    helloWorldText.value = response.data['data'];
   };
+
+  const stations = ref([]);
+
+  const loadStations = async () => {
+    const response = await axios.get('http://localhost:8000/stations');
+    stations.value = response.data['data'];
+  }
+  loadStations();
   loadText();
+
 </script>
