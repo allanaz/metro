@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 
+use App\DTO\TrainInfoDTO;
+use App\DTO\StationInfoDTO;
 use App\Service\WmataApiService;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\AsController;
@@ -15,33 +17,52 @@ class NextTrainController
     {
         try {
             $data = $apiClient->getNextTrains($station);
+            
+            // Transform the data using DTO
+            $trainInfo = TrainInfoDTO::fromApiResponse($data['Trains']);
+            
             return new JsonResponse([
                 'status' => 'success',
-                'data' => $data["Trains"],
+                'data' => $trainInfo->toArray(),
             ]);
         } catch (\Exception $e) {
             return new JsonResponse([
                 'status' => 'error',
-                'message' => 'An unexpected error occurred',
+                'message' => 'An unexpected error occurred: ' . $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
             ], 500);
         }
     }
-
+    
     #[Route('/stations', name: 'get_stations', methods: ['GET'])]
     public function getStations(WmataApiService $apiClient): JsonResponse
     {
         try {
             $data = $apiClient->getStations();
+            // Debug: Return the raw data structure for inspection
+            if (isset($_GET['debug']) && $_GET['debug'] === '1') {
+                return new JsonResponse([
+                    'status' => 'debug',
+                    'raw_data' => $data,
+                ]);
+            }
+            // Transform the data using DTO
+            $stationInfo = StationInfoDTO::fromApiResponse($data);
+            
             return new JsonResponse([
                 'status' => 'success',
-                'data' => $data["Stations"],
+                'data' => $stationInfo->toArray(),
             ]);
         } catch (\Exception $e) {
             return new JsonResponse([
                 'status' => 'error',
-                'message' => 'An unexpected error occurred',
+                'message' => 'An unexpected error occurred: ' . $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
             ], 500);
         }
     }
 }
-

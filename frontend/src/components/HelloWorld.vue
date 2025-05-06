@@ -1,43 +1,77 @@
 <template>
-  <v-container class="fill-height" max-width="900">
-    <div>
-      <v-row>
-        <v-col cols="12">
-          <v-card
-            class="py-4"
-            color="surface-variant"
-            image="https://cdn.vuetifyjs.com/docs/images/one/create/feature.png"
-            rounded="lg"
-            variant="tonal"
-          >
-            <v-select label="Select" :items="stations">
-            </v-select>
-            <v-data-table :items="helloWorldText" hide-default-footer></v-data-table>
-          </v-card>
-        </v-col>
-      </v-row>
-    </div>
-  </v-container>
+  <station-selector 
+    :stations="stations" 
+    @station-selected="handleStationSelected" 
+  />
+  
+  <train-list
+    v-if="selectedStation" 
+    :station="selectedStation" 
+    :trains="trains" 
+    :loading="loading" 
+  />
 </template>
 
 <script setup lang="ts">
-  import axios from 'axios';
-  import { ref } from 'vue';
+import axios from 'axios';
+import { ref, onMounted } from 'vue';
+import { type Station, type Train } from '@/types/metro';
+import StationSelector from './StationSelector.vue';
+import TrainList from './TrainList.vue';
 
-  const helloWorldText = ref([]);
+// State variables
+const stations = ref<Station[]>([]);
+const selectedStation = ref<Station | null>(null);
+const trains = ref<Train[]>([]);
+const loading = ref(false);
 
-  const loadText = async () => {
-    const response = await axios.get('http://localhost:8000/nextTrains/B03');
-    helloWorldText.value = response.data['data'];
-  };
-
-  const stations = ref([]);
-
-  const loadStations = async () => {
-    const response = await axios.get('http://localhost:8000/stations');
-    stations.value = response.data['data'];
+// Get station data
+const loadStations = async () => {
+  try {
+    loading.value = true;
+    const response = await axios.get<{data: Station[]}>('http://localhost:8000/stations');
+    stations.value = response.data.data;
+    loading.value = false;
+  } catch (error) {
+    console.error('Error loading stations:', error);
+    loading.value = false;
   }
-  loadStations();
-  loadText();
+};
 
+// Get next trains for a station
+const loadNextTrains = async (stationCode: string) => {
+  if (!stationCode) return;
+  
+  try {
+    loading.value = true;
+    const response = await axios.get<{data: Train[]}>(`http://localhost:8000/nextTrains/${stationCode}`);
+    trains.value = response.data.data;
+    loading.value = false;
+  } catch (error) {
+    console.error('Error loading train data:', error);
+    trains.value = [];
+    loading.value = false;
+  }
+};
+
+// Process station selection
+const handleStationSelected = (station: Station | null) => {
+  selectedStation.value = station;
+  if (station) {
+    loadNextTrains(station.code);
+  } else {
+    trains.value = [];
+  }
+};
+
+// Load stations when component is mounted
+onMounted(() => {
+  loadStations();
+});
 </script>
+
+<style scoped>
+.v-card {
+  overflow: hidden;
+}
+</style>
