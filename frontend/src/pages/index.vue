@@ -1,5 +1,5 @@
 <template>
-  <HelloWorld />
+  <NextTrain />
 </template>
 
 <script lang="ts" setup>

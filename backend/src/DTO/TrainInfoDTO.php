@@ -78,7 +78,7 @@ class TrainInfoDTO
             function (array $trainData) {
                 return TrainDTO::fromArray($trainData);
             },
-            $data['Trains'] ?? []
+            $data ?? []
         );
 
         return new self($trains);

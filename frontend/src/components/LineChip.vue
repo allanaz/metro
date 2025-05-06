@@ -1,5 +1,5 @@
 <template>
-    <v-chip :color="color" :size="size">{{ line }}</v-chip>
+    <v-chip :color="color" :size="size" variant="flat">{{ line }}</v-chip>
   </template>
   
   <script setup lang="ts">

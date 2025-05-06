@@ -17,7 +17,6 @@ class NextTrainController
     {
         try {
             $data = $apiClient->getNextTrains($station);
-            
             // Transform the data using DTO
             $trainInfo = TrainInfoDTO::fromApiResponse($data['Trains']);
             
@@ -28,10 +27,7 @@ class NextTrainController
         } catch (\Exception $e) {
             return new JsonResponse([
                 'status' => 'error',
-                'message' => 'An unexpected error occurred: ' . $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString()
+                'message' => 'An unexpected error occurred'
             ], 500);
         }
     }
@@ -41,13 +37,6 @@ class NextTrainController
     {
         try {
             $data = $apiClient->getStations();
-            // Debug: Return the raw data structure for inspection
-            if (isset($_GET['debug']) && $_GET['debug'] === '1') {
-                return new JsonResponse([
-                    'status' => 'debug',
-                    'raw_data' => $data,
-                ]);
-            }
             // Transform the data using DTO
             $stationInfo = StationInfoDTO::fromApiResponse($data);
             
@@ -58,10 +47,7 @@ class NextTrainController
         } catch (\Exception $e) {
             return new JsonResponse([
                 'status' => 'error',
-                'message' => 'An unexpected error occurred: ' . $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString(),
+                'message' => 'An unexpected error occurred'
             ], 500);
         }
     }

@@ -105,6 +105,12 @@ class StationInfoDTO
             $data['Stations'] ?? []
         );
 
+        $names = array_map(function($station) {
+            return $station->getName();
+        }, $stations);
+
+        array_multisort($names, SORT_ASC, $stations);        
+
         return new self($stations);
     }
 
